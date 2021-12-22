@@ -59,6 +59,14 @@ async def vplay(c: Client, m: Message):
     await m.delete()
     replied = m.reply_to_message
     chat_id = m.chat.id
+    keyboard = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(text="• Mᴇɴᴜ", callback_data="cbmenu"),
+                InlineKeyboardButton(text="• Cʟᴏsᴇ", callback_data="cls"),
+            ]
+        ]
+    )
     if m.sender_chat:
         return await m.reply_text("you're an __Anonymous__ Admin !\n\n» revert back to user account from admin rights.")
     try:
