@@ -1,6 +1,4 @@
-# Copyright (C) 2021 By Veez Music-Project
-# Commit Start Date 20/10/2021
-# Finished On 28/10/2021
+
 
 import re
 import asyncio
@@ -10,6 +8,8 @@ from driver.filters import command, other_filters
 from driver.queues import QUEUE, add_to_queue
 from driver.veez import call_py, user
 from pyrogram import Client
+from driver.helpers.other.generator.chattitle import CHAT_TITLE
+from driver.helpers.other.generator.thumbnail import gen_thumb
 from pyrogram.errors import UserAlreadyParticipant, UserNotParticipant
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from pytgcalls import StreamType
@@ -59,14 +59,6 @@ async def vplay(c: Client, m: Message):
     await m.delete()
     replied = m.reply_to_message
     chat_id = m.chat.id
-    keyboard = InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(text="• Mᴇɴᴜ", callback_data="cbmenu"),
-                InlineKeyboardButton(text="• Cʟᴏsᴇ", callback_data="cls"),
-            ]
-        ]
-    )
     if m.sender_chat:
         return await m.reply_text("you're an __Anonymous__ Admin !\n\n» revert back to user account from admin rights.")
     try:
@@ -126,7 +118,7 @@ async def vplay(c: Client, m: Message):
 
     if replied:
         if replied.video or replied.document:
-            loser = await replied.reply("📥 **downloading video...**")
+            loser = await replied.reply("**🔄 Processing video..**")
             dl = await replied.download()
             link = replied.link
             if len(m.command) < 2:
@@ -138,7 +130,7 @@ async def vplay(c: Client, m: Message):
                 else:
                     Q = 720
                     await loser.edit(
-                        "» __only 720, 480, 360 allowed__ \n💡 **now streaming video in 720p**"
+                        "**Only 720p, 480p, 360p Allowed. \n Now Streaming in 720p**"
                     )
             try:
                 if replied.video:
@@ -153,8 +145,8 @@ async def vplay(c: Client, m: Message):
                 await loser.delete()
                 requester = f"[{m.from_user.first_name}](tg://user?id={m.from_user.id})"
                 await m.reply_photo(
-                    photo=f"{IMG_1}",
-                    caption=f"💡 **Track added to queue »** `{pos}`\n\n🏷 **Name:** [{songname}]({link}) | `video`\n💭 **Chat:** `{chat_id}`\n🎧 **Request by:** {requester}",
+                    photo="https://telegra.ph/file/d6f92c979ad96b2031cba.png",
+                    caption=f"🎬<b>__Song:__</b> [{songname}]({link})\n👤<b>__Requested by:__ </b>{requester}\n🔗 <u>__[Get Additional Information About Video](https://t.me/{BOT_USERNAME}__</u>\n🚧<b>__Queued at:__</b> <b>#{pos}!</b>",
                     reply_markup=keyboard,
                 )
             else:
@@ -164,7 +156,7 @@ async def vplay(c: Client, m: Message):
                     amaze = MediumQualityVideo()
                 elif Q == 360:
                     amaze = LowQualityVideo()
-                await loser.edit("🔄 **Joining vc...**")
+                await loser.edit("🔄 **Joining voice chat...**")
                 await call_py.join_group_call(
                     chat_id,
                     AudioVideoPiped(
@@ -178,14 +170,14 @@ async def vplay(c: Client, m: Message):
                 await loser.delete()
                 requester = f"[{m.from_user.first_name}](tg://user?id={m.from_user.id})"
                 await m.reply_photo(
-                    photo=f"{IMG_2}",
-                    caption=f"🏷 **Name:** [{songname}]({link})\n💭 **Chat:** `{chat_id}`\n💡 **Status:** `Playing`\n🎧 **Request by:** {requester}\n📹 **Stream type:** `Video`",
+                    photo="https://telegra.ph/file/6213d2673486beca02967.png",
+                    caption=f"**🔗Title**:[{songname}]({link})\n **⚙Status:** Playing \n👤<b>__Requested by:__ </b> {requester}\n**🎥Stream type:** Video \n🔗 <u>__[Get Additional Information About Video](https://t.me/{BOT_USERNAME}__</u>\n⚡ __Powered by *Sophia Video*__",
                     reply_markup=keyboard,
                 )
         else:
             if len(m.command) < 2:
                 await m.reply(
-                    "» reply to an **video file** or **give something to search.**"
+                    "**Reply to Audio File or provide something for Searching ...**"
                 )
             else:
                 loser = await c.send_message(chat_id, "🔍 **Searching...**")
@@ -194,15 +186,20 @@ async def vplay(c: Client, m: Message):
                 Q = 720
                 amaze = HighQualityVideo()
                 if search == 0:
-                    await loser.edit("❌ **no results found.**")
+                    await loser.edit("**Didn't Find Anything for the Given Query 🤷‍♀️**")
                 else:
-                    songname = search[0]
-                    url = search[1]
-                    duration = search[2]
-                    thumbnail = search[3]
-                    veez, ytlink = await ytdl(url)
-                    if veez == 0:
-                        await loser.edit(f"❌ yt-dl issues detected\n\n» `{ytlink}`")
+                songname = search[0]
+                title = search[0]
+                url = search[1]
+                duration = search[2]
+                thumbnail = search[3]
+                userid = m.from_user.id
+                srrf = m.chat.title
+                ctitle = await CHAT_TITLE(srrf)
+                thumb = await gen_thumb(thumbnail, title, userid, ctitle)
+                hm, ytlink = await ytdl(url)
+                if hm == 0:
+                        await loser.edit(f"**Yt-dl issues detected..** \n » {ytlink}")
                     else:
                         if chat_id in QUEUE:
                             pos = add_to_queue(
@@ -211,13 +208,13 @@ async def vplay(c: Client, m: Message):
                             await loser.delete()
                             requester = f"[{m.from_user.first_name}](tg://user?id={m.from_user.id})"
                             await m.reply_photo(
-                                photo=thumbnail,
-                                caption=f"💡 **Track added to queue »** `{pos}`\n\n🏷 **Name:** [{songname}]({url}) | `video`\n⏱ **Duration:** `{duration}`\n🎧 **Request by:** {requester}",
+                                photo=f"{thumb}",
+                                caption=f"🎬<b>__Song:__</b> [{songname}]({link})\n👤<b>__Requested by:__ </b>{requester}\n🔗 <u>__[Get Additional Information About Video](https://t.me/{BOT_USERNAME}__</u>\n🚧<b>__Queued at:__</b> <b>#{pos}!</b>",
                                 reply_markup=keyboard,
                             )
                         else:
                             try:
-                                await loser.edit("🔄 **Joining vc...**")
+                                await loser.edit("🔄 **Prossesing..**")
                                 await call_py.join_group_call(
                                     chat_id,
                                     AudioVideoPiped(
@@ -231,18 +228,18 @@ async def vplay(c: Client, m: Message):
                                 await loser.delete()
                                 requester = f"[{m.from_user.first_name}](tg://user?id={m.from_user.id})"
                                 await m.reply_photo(
-                                    photo=thumbnail,
-                                    caption=f"🏷 **Name:** [{songname}]({url})\n⏱ **Duration:** `{duration}`\n💡 **Status:** `Playing`\n🎧 **Request by:** {requester}\n📹 **Stream type:** `Video`",
+                                    photo={thumb},
+                                    caption=f"**🔗Title**:[{songname}]({link})\n **⚙Status:** Playing \n👤<b>__Requested by:__ </b> {requester}\n**🎥Stream type:** Video \n🔗 <u>__[Get Additional Information About Video](https://t.me/{BOT_USERNAME}__</u>\n⚡ __Powered by *Sophia Video*__",
                                     reply_markup=keyboard,
                                 )
                             except Exception as ep:
                                 await loser.delete()
-                                await m.reply_text(f"🚫 error: `{ep}`")
+                                await m.reply_text(f"🚫 Please Active Voice chat..")
 
     else:
         if len(m.command) < 2:
             await m.reply(
-                "» reply to an **video file** or **give something to search.**"
+                "Reply to an **video file** or **Give something to search..**"
             )
         else:
             loser = await c.send_message(chat_id, "🔍 **Searching...**")
@@ -251,7 +248,7 @@ async def vplay(c: Client, m: Message):
             Q = 720
             amaze = HighQualityVideo()
             if search == 0:
-                await loser.edit("❌ **no results found.**")
+                await loser.edit("**Didn't Find Anything for the Given Query 🤷‍♀️**")
             else:
                 songname = search[0]
                 url = search[1]
@@ -259,7 +256,7 @@ async def vplay(c: Client, m: Message):
                 thumbnail = search[3]
                 veez, ytlink = await ytdl(url)
                 if veez == 0:
-                    await loser.edit(f"❌ yt-dl issues detected\n\n» `{ytlink}`")
+                    await loser.edit(f"Yt-dl issues detected\n » {ytlink}")
                 else:
                     if chat_id in QUEUE:
                         pos = add_to_queue(chat_id, songname, ytlink, url, "Video", Q)
@@ -269,7 +266,7 @@ async def vplay(c: Client, m: Message):
                         )
                         await m.reply_photo(
                             photo=thumbnail,
-                            caption=f"💡 **Track added to queue »** `{pos}`\n\n🏷 **Name:** [{songname}]({url}) | `video`\n⏱ **Duration:** `{duration}`\n🎧 **Request by:** {requester}",
+                            caption=f"🎬<b>__Song:__</b> [{songname}]({link})\n⏱ **Duration:** {duration}\n👤<b>__Requested by:__ </b>{requester}\n🔗 <u>__[Get Additional Information About Video](https://t.me/{BOT_USERNAME}__</u>\n🚧<b>__Queued at:__</b> <b>#{pos}!</b>",
                             reply_markup=keyboard,
                         )
                     else:
@@ -289,15 +286,15 @@ async def vplay(c: Client, m: Message):
                             requester = f"[{m.from_user.first_name}](tg://user?id={m.from_user.id})"
                             await m.reply_photo(
                                 photo=thumbnail,
-                                caption=f"🏷 **Name:** [{songname}]({url})\n⏱ **Duration:** `{duration}`\n💡 **Status:** `Playing`\n🎧 **Request by:** {requester}\n📹 **Stream type:** `Video`",
+                                caption=f"**🔗Title**:[{songname}]({link})\n ⏱ **Duration:** {duration}\n**⚙Status:** Playing \n👤<b>__Requested by:__ </b> {requester}\n**🎥Stream type:** Video \n🔗 <u>__[Get Additional Information About Video](https://t.me/{BOT_USERNAME}__</u>\n⚡ __Powered by *Sophia Video*__",
                                 reply_markup=keyboard,
                             )
                         except Exception as ep:
                             await loser.delete()
-                            await m.reply_text(f"🚫 error: `{ep}`")
+                            await m.reply_text(f"🚫 Error: {ep}")
 
 
-@Client.on_message(command(["vstream", f"vstream@{BOT_USERNAME}"]) & other_filters)
+@Client.on_message(command(["ahevstream", f"ahevstream@{BOT_USERNAME}"]) & other_filters)
 async def vstream(c: Client, m: Message):
     await m.delete()
     chat_id = m.chat.id
