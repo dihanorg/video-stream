@@ -13,7 +13,7 @@ from config import (
 )
 
 
-@Client.on_callback_query(filters.regex("cbstart"))
+@Client.on_callback_query(filters.regex("acbstart"))
 async def cbstart(_, query: CallbackQuery):
     await query.edit_message_text(
         f"""✨ **Welcome [{query.message.chat.first_name}](tg://user?id={query.message.chat.id}) !**\n
@@ -54,7 +54,7 @@ async def cbstart(_, query: CallbackQuery):
     )
 
 
-@Client.on_callback_query(filters.regex("cbhowtouse"))
+@Client.on_callback_query(filters.regex("acbhowtouse"))
 async def cbguides(_, query: CallbackQuery):
     await query.edit_message_text(
         f"""❓ **Basic Guide for using this bot:**
@@ -77,7 +77,7 @@ async def cbguides(_, query: CallbackQuery):
     )
 
 
-@Client.on_callback_query(filters.regex("cbcmds"))
+@Client.on_callback_query(filters.regex("acbcmds"))
 async def cbcmds(_, query: CallbackQuery):
     await query.edit_message_text(
         f"""✨ **Hello [{query.message.chat.first_name}](tg://user?id={query.message.chat.id}) !**
@@ -100,7 +100,7 @@ async def cbcmds(_, query: CallbackQuery):
     )
 
 
-@Client.on_callback_query(filters.regex("cbbasic"))
+@Client.on_callback_query(filters.regex("acbbasic"))
 async def cbbasic(_, query: CallbackQuery):
     await query.edit_message_text(
         f"""🏮 here is the basic commands:
@@ -125,7 +125,7 @@ async def cbbasic(_, query: CallbackQuery):
     )
 
 
-@Client.on_callback_query(filters.regex("cbadmin"))
+@Client.on_callback_query(filters.regex("acbadmin"))
 async def cbadmin(_, query: CallbackQuery):
     await query.edit_message_text(
         f"""🏮 here is the admin commands:
@@ -147,7 +147,7 @@ async def cbadmin(_, query: CallbackQuery):
         ),
     )
 
-@Client.on_callback_query(filters.regex("cbsudo"))
+@Client.on_callback_query(filters.regex("acbsudo"))
 async def cbsudo(_, query: CallbackQuery):
     await query.edit_message_text(
         f"""🏮 here is the sudo commands:
@@ -186,7 +186,7 @@ async def cbmenu(_, query: CallbackQuery):
                       InlineKeyboardButton("🔇", callback_data="cbmute"),
                       InlineKeyboardButton("🔊", callback_data="cbunmute"),
                   ],[
-                      InlineKeyboardButton("🗑 Close", callback_data="cls")],
+                      InlineKeyboardButton("🗑 Close Menu", callback_data="cls")],
                   ]
              ),
          )
